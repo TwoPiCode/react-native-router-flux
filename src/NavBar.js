@@ -96,8 +96,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   rightButton: {
-    width: 70,
-    height: 37,
+    flex: 1,
     position: 'absolute',
     ...Platform.select({
       ios: {
@@ -107,24 +106,25 @@ const styles = StyleSheet.create({
         top: 10,
       },
     }),
-    right: 2,
+    right: 5,
     padding: 8,
+    borderWidth: 0,
+    borderColor: 'orange'
   },
   secondRightButton: {
-    width: 100,
-    height: 37,
+    flex: 1,
     position: 'absolute',
     ...Platform.select({
       ios: {
-        top: 5,
+        top: 10,
       },
       android: {
         top: 10,
       },
     }),
-    right: 30,
-    padding: 8,
-    borderWidth: 1,
+    right: 50,
+    padding: 0,
+    borderWidth: 0,
     borderColor: 'orange'
   },
   leftButton: {
@@ -337,7 +337,7 @@ class NavBar extends React.Component {
         );
       }
       if ((!!state.onRight ^ !!(typeof (rightTitle) !== 'undefined'
-        || typeof (state.rightButtonImage) !== 'undefined'))) {
+        || typeof (state.rightButtonImage) !== 'undefined')) || !!state.rightIcon) {
         console.warn(
           `Both onRight and rightTitle/rightButtonImage
             must be specified for the scene: ${state.name}`
@@ -358,33 +358,27 @@ class NavBar extends React.Component {
 
       const secondRightIcon = state.secondRightIcon ? state.secondRightIcon : null;
 
-      const style = [styles.secondRightButton];
+      const style = [styles.secondRightButton, self.props.secondRightButtonStyle];
 
-      if (state.onSecondRight && (rightTitle || state.rightButtonImage)) {
+      if (state.onSecondRight && (rightTitle || state.rightButtonImage || secondRightIcon)) {
         const onPress = state.onSecondRight.bind(null, state);
-        // <TouchableOpacity
-        // key={'rightNavBarBtn'}
-        //   testID="rightNavButton"
-        //   style={style}
-        //   onPress={onPress}
-        // > 
         return (
-          <View style={style} >
-            <Text style={{ color: 'white' }}> LAAAAAA </Text>
-          </View>
-        )
-        return (
-          <View>
-            {secondRightIcon &&
-              <View style={style} >
-                {secondRightIcon}
-              </View>
-            }
-          </View>
+          <TouchableOpacity
+            // key={'rightNavBarBtn'}
+            style={style}
+            onPress={onPress}
+          >
+            <View>
+              {secondRightIcon &&
+                <View>
+                  {secondRightIcon}
+                </View>
+              }
+            </View>
+          </TouchableOpacity>
         );
-        // {/* // </TouchableOpacity> */}
       }
-      if ((!!state.onRight ^ !!(typeof (rightTitle) !== 'undefined'
+      if ((!!state.onSecondRight ^ !!(typeof (rightTitle) !== 'undefined'
         || typeof (state.rightButtonImage) !== 'undefined'))) {
         console.warn(
           `Both onRight and rightTitle/rightButtonImage
