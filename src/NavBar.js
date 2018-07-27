@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   rightButton: {
-    width: 100,
+    width: 70,
     height: 37,
     position: 'absolute',
     ...Platform.select({
@@ -109,6 +109,23 @@ const styles = StyleSheet.create({
     }),
     right: 2,
     padding: 8,
+  },
+  secondRightButton: {
+    width: 100,
+    height: 37,
+    position: 'absolute',
+    ...Platform.select({
+      ios: {
+        top: 5,
+      },
+      android: {
+        top: 10,
+      },
+    }),
+    right: 30,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: 'orange'
   },
   leftButton: {
     width: 100,
@@ -144,9 +161,6 @@ const styles = StyleSheet.create({
   backButtonImage: {
     width: 13,
     height: 21,
-  },
-  rightButtonIconStyle: {
-
   },
   defaultImageStyle: {
     height: 24,
@@ -189,6 +203,7 @@ class NavBar extends React.Component {
     super(props);
 
     this.renderRightButton = this.renderRightButton.bind(this);
+    this.renderSecondRightButton = this.renderSecondRightButton.bind(this);
     this.renderBackButton = this.renderBackButton.bind(this);
     this.renderLeftButton = this.renderLeftButton.bind(this);
     this.renderTitle = this.renderTitle.bind(this);
@@ -226,7 +241,7 @@ class NavBar extends React.Component {
         />
       );
     }
-    let buttonImage = childState.backButtonImage ||
+    const buttonImage = childState.backButtonImage ||
       state.backButtonImage || this.props.backButtonImage;
     let onPress = childState.onBack || childState.component.onBack;
     if (onPress) {
@@ -235,10 +250,10 @@ class NavBar extends React.Component {
       onPress = Actions.pop;
     }
 
-    let text = childState.backTitle ?
-      <Text style={textButtonStyle}>
+    const text = childState.backTitle ?
+      (<Text style={textButtonStyle}>
         {childState.backTitle}
-      </Text>
+      </Text>)
       : null;
 
     return (
@@ -272,8 +287,10 @@ class NavBar extends React.Component {
       }
       const rightTitle = state.getRightTitle ? state.getRightTitle(navProps) : state.rightTitle;
 
+      const rightIcon = state.rightIcon ? state.rightIcon : null;
+
       const textStyle = [styles.barRightButtonText, self.props.rightButtonTextStyle,
-        state.rightButtonTextStyle];
+      state.rightButtonTextStyle];
       const style = [styles.rightButton, self.props.rightButtonStyle, state.rightButtonStyle];
       if (state.rightButton) {
         let Button = state.rightButton;
@@ -291,7 +308,7 @@ class NavBar extends React.Component {
           />
         );
       }
-      if (state.onRight && (rightTitle || state.rightButtonImage)) {
+      if (state.onRight && (rightTitle || state.rightButtonImage || rightIcon)) {
         const onPress = state.onRight.bind(null, state);
         return (
           <TouchableOpacity
@@ -305,19 +322,22 @@ class NavBar extends React.Component {
                 {rightTitle}
               </Text>
             }
-            {state.rightButtonImage &&
+            {(state.rightButtonImage || rightIcon) &&
               <View style={{ flex: 1, justifyContent: 'center', alignItems: 'flex-end' }}>
-                <Image
-                  source={state.rightButtonImage}
-                  style={state.rightButtonIconStyle}
-                />
+                {state.rightButtonImage &&
+                  <Image
+                    source={state.rightButtonImage}
+                    style={state.rightButtonIconStyle}
+                  />
+                }
+                {rightIcon}
               </View>
             }
           </TouchableOpacity>
         );
       }
-      if ((!!state.onRight ^ !!(typeof(rightTitle) !== 'undefined'
-        || typeof(state.rightButtonImage) !== 'undefined'))) {
+      if ((!!state.onRight ^ !!(typeof (rightTitle) !== 'undefined'
+        || typeof (state.rightButtonImage) !== 'undefined'))) {
         console.warn(
           `Both onRight and rightTitle/rightButtonImage
             must be specified for the scene: ${state.name}`
@@ -326,6 +346,54 @@ class NavBar extends React.Component {
       return null;
     }
     return tryRender(this.props.component, this.props.wrapBy) || tryRender(this.props);
+  }
+
+  renderSecondRightButton(navProps) {
+    const self = this;
+    function tryRender(state) {
+      if (!state) {
+        return null;
+      }
+      const rightTitle = state.getRightTitle ? state.getRightTitle(navProps) : state.rightTitle;
+
+      const secondRightIcon = state.secondRightIcon ? state.secondRightIcon : null;
+
+      const style = [styles.secondRightButton];
+
+      if (state.onSecondRight && (rightTitle || state.rightButtonImage)) {
+        const onPress = state.onSecondRight.bind(null, state);
+        // <TouchableOpacity
+        // key={'rightNavBarBtn'}
+        //   testID="rightNavButton"
+        //   style={style}
+        //   onPress={onPress}
+        // > 
+        return (
+          <View style={style} >
+            <Text style={{ color: 'white' }}> LAAAAAA </Text>
+          </View>
+        )
+        return (
+          <View>
+            {secondRightIcon &&
+              <View style={style} >
+                {secondRightIcon}
+              </View>
+            }
+          </View>
+        );
+        // {/* // </TouchableOpacity> */}
+      }
+      if ((!!state.onRight ^ !!(typeof (rightTitle) !== 'undefined'
+        || typeof (state.rightButtonImage) !== 'undefined'))) {
+        console.warn(
+          `Both onRight and rightTitle/rightButtonImage
+            must be specified for the scene: ${state.name}`
+        );
+      }
+      return null;
+    }
+    return tryRender(this.props.component) || tryRender(this.props);
   }
 
   renderLeftButton(navProps) {
@@ -337,7 +405,7 @@ class NavBar extends React.Component {
       let menuIcon = state.drawerIcon;
       const style = [styles.leftButton, self.props.leftButtonStyle, state.leftButtonStyle];
       const textStyle = [styles.barLeftButtonText, self.props.leftButtonTextStyle,
-        state.leftButtonTextStyle];
+      state.leftButtonTextStyle];
       const leftButtonStyle = [styles.defaultImageStyle, state.leftButtonIconStyle];
       const leftTitle = state.getLeftTitle ? state.getLeftTitle(navProps) : state.leftTitle;
 
@@ -410,12 +478,12 @@ class NavBar extends React.Component {
     return tryRender(this.props.component, this.props.wrapBy) || tryRender(this.props);
   }
 
-  renderTitle(childState, index:number) {
+  renderTitle(childState, index: number) {
     let title = this.props.getTitle ? this.props.getTitle(childState) : childState.title;
     if (title === undefined && childState.component && childState.component.title) {
       title = childState.component.title;
     }
-    if (typeof(title) === 'function') {
+    if (typeof (title) === 'function') {
       title = title(childState);
     }
     return (
@@ -468,7 +536,7 @@ class NavBar extends React.Component {
 
     const wrapByStyle = (component, wrapStyle) => {
       if (!component) { return null; }
-      return (props) => <View style={wrapStyle}>{component(props)}</View>;
+      return props => <View style={wrapStyle}>{component(props)}</View>;
     };
 
     const leftButtonStyle = [styles.leftButton, { alignItems: 'flex-start' }];
@@ -480,6 +548,7 @@ class NavBar extends React.Component {
     const renderRightButton = wrapByStyle(selected.renderRightButton, rightButtonStyle) ||
       wrapByStyle(selected.component.renderRightButton, rightButtonStyle) ||
       this.renderRightButton;
+    const renderSecondRightButton = this.renderSecondRightButton;
     const renderBackButton = wrapByStyle(selected.renderBackButton, leftButtonStyle) ||
       wrapByStyle(selected.component.renderBackButton, leftButtonStyle) ||
       this.renderBackButton;
@@ -492,6 +561,7 @@ class NavBar extends React.Component {
       <View>
         {renderTitle ? renderTitle(navProps) : state.children.map(this.renderTitle, this)}
         {renderBackButton(navProps) || renderLeftButton(navProps)}
+        {renderSecondRightButton(navProps)}
         {renderRightButton(navProps)}
       </View>
     );
